@@ -44,7 +44,7 @@ class DLL_EXPORT cException : public std::exception
 
 //Singleton Logging Object
 
-class cErrorLogManager : public cEngineObject
+class DLL_EXPORT cErrorLogManager : public cEngineObject
 {
     public:
         static cErrorLogManager * GetErrorManager();
