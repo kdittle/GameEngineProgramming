@@ -15,6 +15,41 @@ ResourceLoader::~ResourceLoader()
 	mHeight = 0;
 }
 
+void ResourceLoader::InitializeSDL()
+{
+	SDL_Init(SDL_INIT_EVERYTHING);
+
+	SDL_SetHint(SDL_HINT_RENDER_VSYNC, "1");
+	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
+
+	pWindow = SDL_CreateWindow("Window", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+		WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
+
+	if (pWindow == NULL)
+	{
+		std::printf("Window is Null %s! SDL_Window Error: %s\n", SDL_GetError());
+	}
+
+	pRenderer = SDL_CreateRenderer(pWindow, -1, SDL_RENDERER_ACCELERATED);
+
+	if (pRenderer == NULL)
+	{
+		std::printf("Renderer is Null %s! SDL_Renderer Error: %s\n", SDL_GetError());
+	}
+
+	pSurface = SDL_GetWindowSurface(pWindow);
+
+	if (pSurface == NULL)
+	{
+		std::printf("Surface is Null %s! SDL_Surface Error: %s\n", SDL_GetError());
+	}
+}
+
+SDL_Renderer* ResourceLoader::GetRenderer()
+{
+	return pRenderer;
+}
+
 void ResourceLoader::Destory()
 {
 	SDL_DestroyTexture(mTexture);
@@ -88,4 +123,14 @@ int ResourceLoader::getHeight()
 int ResourceLoader::getWidth()
 {
 	return mWidth;
+}
+
+int ResourceLoader::GetWindowWidth()
+{
+	return WINDOW_WIDTH;
+}
+
+int ResourceLoader::GetWindowHeight()
+{
+	return WINDOW_HEIGHT;
 }

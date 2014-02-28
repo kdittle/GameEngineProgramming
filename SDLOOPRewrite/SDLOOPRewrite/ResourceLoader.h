@@ -2,13 +2,21 @@
 #define RESOURCELOADER_H
 
 #include "Headers.h"
-#include "SDLEntity.h"
 
-class ResourceLoader : public SDLEntity
+static SDL_Window* pWindow;
+static SDL_Renderer* pRenderer;
+static SDL_Surface* pSurface;
+
+class ResourceLoader
 {
 public:
+	const int WINDOW_WIDTH = 640;
+	const int WINDOW_HEIGHT = 480;
+
 	ResourceLoader();
 	~ResourceLoader();
+
+	void InitializeSDL();
 
 	void Destory();
 	void Free();
@@ -20,13 +28,17 @@ public:
 	int getHeight();
 	int getWidth();
 
+	int GetWindowWidth();
+	int GetWindowHeight();
+	SDL_Renderer* GetRenderer();
+
 private:
 	SDL_Texture* mTexture;
 	int mWidth;
 	int mHeight;
 
 protected:
-
+	
 	
 };
 
