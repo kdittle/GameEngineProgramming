@@ -1,0 +1,39 @@
+<Schedule>
+  <Author>Marc</Author>
+  <DateWritten>2-13-2014</DateWritten>
+  <Movies>
+    <Movie>
+      <Title Type="SciFi">Godzilla</Title>
+      <Year>2014</Year>
+      <Studio>MGM</Studio>
+    </Movie>
+    <Movie>
+      <Title Type="Drama">Casino</Title>
+      <Year>1993</Year>
+      <Studio>Disney</Studio>
+      <Actors>
+        <Actor Role="Male Lead">Robert De Niro</Actor>
+        <Actor Role="Supporting Male">Joe Pesci</Actor>
+        <Actor Role="Female Lead">Sharon Stone</Actor>
+      </Actors>
+    </Movie>
+    <Movie>
+      <Title Type="Comedy">Meet The Parents</Title>
+      <Year>2001</Year>
+      <Studio>Sony</Studio>
+      <Actors>
+        <Actor Role="Male Lead">Ben Stiller</Actor>
+        <Actor Role="Female Lead">Teri Polo</Actor>
+      </Actors>
+    </Movie>
+    <Movie>
+      <Title Type="Comedy">Ted</Title>
+      <Year>2012</Year>
+      <Studio>Universal</Studio>
+      <Actors>
+        <Actor Role="Male Lead">Mark Wahlberg</Actor>
+        <Actor Role="Female Lead">Mila Kunis</Actor>
+      </Actors>
+    </Movie>
+  </Movies>
+</Schedule>

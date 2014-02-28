@@ -6,6 +6,9 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ErrorManager", "ErrorManager\ErrorManager.vcxproj", "{95F288F9-D56D-4B3B-ACDF-C65C900B3100}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ErrorMgrClient", "ErrorMgrClient\ErrorMgrClient.vcxproj", "{F327A37D-0A94-40DC-9F11-339BA2DCAF40}"
+	ProjectSection(ProjectDependencies) = postProject
+		{95F288F9-D56D-4B3B-ACDF-C65C900B3100} = {95F288F9-D56D-4B3B-ACDF-C65C900B3100}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
