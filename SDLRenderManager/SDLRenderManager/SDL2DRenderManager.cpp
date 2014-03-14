@@ -31,7 +31,7 @@ void cRenderResource::load()
 
 	SDL_SetColorKey(loadedSurface, SDL_TRUE, SDL_MapRGB(loadedSurface->format, 0xFF, 0xFF, 0xFF));
 
-	SDL_Texture* newTexture = SDL_CreateTextureFromSurface(cSDL2DRenderManager::m_Renderer, loadedSurface);
+	SDL_Texture* newTexture = SDL_CreateTextureFromSurface(cSDL2DRenderManager::GetSDL2DRenderManager()->m_Renderer, loadedSurface);
 
 	SDL_FreeSurface(loadedSurface);
 
@@ -88,8 +88,10 @@ void cSDLRenderObject::setResourceObject(cRenderResource *RenderResource)
     if(RenderResource)
     {
         m_RenderResource = RenderResource;
-        m_RenderRect.w=m_RenderResource->m_Surface->w;
-        m_RenderRect.h=m_RenderResource->m_Surface->h;
+		int w, h;
+		SDL_QueryTexture(m_RenderResource->m_Texture, NULL, NULL, &w, &h);
+		m_RenderRect.w = w;
+		m_RenderRect.h = h;
 
         if(m_bColorKeyEnabled)
             setColorKey(m_ColorKey.r, m_ColorKey.g, m_ColorKey.b);
@@ -283,7 +285,7 @@ void cSDL2DRenderManager::renderAllObjects()
     std::list<cSDLRenderObject*>::iterator list_it;
 
     //Render all assoicated render objects
-    for(list_it=m_RenderObjects.begin();list_it!=m_RenderObjects.end();list_it++)
+    for(list_it = m_RenderObjects.begin(); list_it != m_RenderObjects.end(); list_it++)
     {
         if((*list_it)->m_bVisible)
         {
@@ -291,7 +293,7 @@ void cSDL2DRenderManager::renderAllObjects()
             SDL_Rect Pos;
             Pos.x = int((*list_it)->m_PosX);
             Pos.y = int((*list_it)->m_PosY);
-            //SDL_BlitSurface((*list_it)->m_RenderResource->m_Surface, &(*list_it)->m_RenderRect, m_RenderWindow,, &Pos);
+			SDL_RenderCopy(m_Renderer, (*list_it)->m_RenderResource->m_Texture, NULL, NULL);
 			SDL_RenderPresent(m_Renderer);
         }
     }

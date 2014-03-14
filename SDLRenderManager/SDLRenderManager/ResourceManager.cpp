@@ -72,7 +72,7 @@ bool cResourceManager::loadFromXMLFile(std::string Filename)
 {
     XMLDocument doc(Filename.c_str());
 
-    if(doc.LoadFile(Filename.c_str()))
+    if(doc.LoadFile(Filename.c_str()) == XML_NO_ERROR)
     {
         //Find resources node
         XMLNode* ResourceTree = doc.FirstChild();

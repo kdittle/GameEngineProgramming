@@ -25,11 +25,11 @@ void cInputManager::init()
 	m_OISInputManager = OIS::InputManager::createInputSystem( pl );
 
 	//If there is a keyboard
-	//if(m_OISInputManager->numKeyBoards() > 0)
-	//{
-	//	m_Keyboard = static_cast<OIS::Keyboard*>(m_OISInputManager->createInputObject(OIS::OISKeyboard, true));
-	//	m_Keyboard->setEventCallback(this);
-	//}
+	/*if(m_OISInputManager->numKeyBoards() > 0)
+	{
+		m_Keyboard = static_cast<OIS::Keyboard*>(m_OISInputManager->createInputObject(OIS::OISKeyboard, true));
+		m_Keyboard->setEventCallback(this);
+	}*/
 
 	////If there is a mouse
 	//if(m_OISInputManager->numMice() > 0)

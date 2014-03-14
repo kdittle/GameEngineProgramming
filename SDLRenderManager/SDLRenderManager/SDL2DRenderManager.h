@@ -67,6 +67,7 @@ class cSDL2DRenderManager : public c2DRenderManager
     static cSDL2DRenderManager m_SDL2DRenderManager;
     void renderScene();
 	SDL_SysWMinfo m_inf;
+
     public:
     static cSDL2DRenderManager* GetSDL2DRenderManager();
 	SDL_Window* m_Window;
