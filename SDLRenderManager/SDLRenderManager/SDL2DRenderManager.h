@@ -3,7 +3,7 @@
 
 #include "2DRenderManager.h"
 #include "ResourceManager.h"
-//#include "SDLSceneManager.h"
+#include "SDLSceneManager.h"
 #include <SDL.h>
 #include <SDL_Image.h>
 #include <string>
@@ -83,6 +83,7 @@ class cSDL2DRenderManager : public c2DRenderManager
 	HWND m_WindowHandle;
 
     std::list<cSDLRenderObject*> m_RenderObjects;
+	cSDL2DSceneManager* m_SceneManager;
 };
 
 //------------------------------------------------------------

@@ -24,6 +24,9 @@ void cInputManager::init()
 	pl.insert(std::make_pair(std::string("WINDOW"), windowHndStr.str()));
 	m_OISInputManager = OIS::InputManager::createInputSystem( pl );
 
+	m_Keyboard = static_cast<OIS::Keyboard*>(m_OISInputManager->createInputObject(OIS::OISKeyboard, true));
+	m_Keyboard->setEventCallback(this);
+
 	//If there is a keyboard
 	/*if(m_OISInputManager->numKeyBoards() > 0)
 	{
