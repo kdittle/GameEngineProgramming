@@ -26,16 +26,6 @@ cRenderResource::~cRenderResource()
 void cRenderResource::load()
 {
     unload();
-	
-	/*SDL_Surface* loadedSurface = IMG_Load(m_FileName.c_str());
-
-	SDL_SetColorKey(loadedSurface, SDL_TRUE, SDL_MapRGB(loadedSurface->format, 0xFF, 0xFF, 0xFF));
-
-	SDL_Texture* newTexture = SDL_CreateTextureFromSurface(cSDL2DRenderManager::GetSDL2DRenderManager()->m_Renderer, loadedSurface);
-
-	SDL_FreeSurface(loadedSurface);
-
-	m_Texture = newTexture;*/
 
 	m_Texture = IMG_LoadTexture(cSDL2DRenderManager::GetSDL2DRenderManager()->m_Renderer, m_FileName.c_str());
     
@@ -240,6 +230,31 @@ void cSDL2DRenderManager::free()
 
 //-------------------------------------------------------
 
+bool cSDL2DRenderManager::checkKeys(SDL_Keysym keysym)
+{
+	// exit if ESCAPE is pressed
+	switch (keysym.sym)
+	{
+	case SDLK_ESCAPE:
+		return false;
+
+	case SDLK_HOME:
+		// reset to X origin
+		if (keysym.mod & KMOD_CTRL)
+			bGoOrigin = true;
+		else
+			bGoHome = true;
+		break;
+
+	case SDLK_END:
+		// reset to X origin
+		bGoEnd = true;
+		break;
+
+	}
+	return true;
+}
+
 bool cSDL2DRenderManager::update()
 {
     SDL_Event event;
@@ -252,18 +267,18 @@ bool cSDL2DRenderManager::update()
             case SDL_QUIT:
                 return false;
 
+			case SDL_WINDOWEVENT:
+				
+				SDL_GetWindowSize(this->m_Window, &current_width, &current_height);
+				break;
+
             // check for keypresses
             case SDL_KEYDOWN:
-            {
-                // exit if ESCAPE is pressed
-                if (event.key.keysym.sym == SDLK_ESCAPE)
-                    return false;
-            }
+				return checkKeys(event.key.keysym);
         } // end switch
     } // end of message processing
 
     // clear screen
-    ///SDL_FillRect(m_RenderWindow, 0, SDL_MapRGB(m_RenderWindow->format, 0, 0, 0));
 	SDL_RenderClear(m_Renderer);
 
     renderScene();
@@ -271,8 +286,6 @@ bool cSDL2DRenderManager::update()
     //Call frame listeners
     renderAllObjects();
 
-    // finally, update the screen :)
-    //SDL_Flip(m_RenderWindow);
 	SDL_RenderPresent(m_Renderer);
 
     return true;
@@ -284,19 +297,55 @@ void cSDL2DRenderManager::renderAllObjects()
 {
     std::list<cSDLRenderObject*>::iterator list_it;
 
-    //Render all assoicated render objects
-    for(list_it = m_RenderObjects.begin(); list_it != m_RenderObjects.end(); list_it++)
-    {
-        if((*list_it)->m_bVisible)
-        {
-            (*list_it)->update();
-            SDL_Rect Pos;
-            Pos.x = int((*list_it)->m_PosX);
-            Pos.y = int((*list_it)->m_PosY);
-			SDL_RenderCopy(m_Renderer, (*list_it)->m_RenderResource->m_Texture, NULL, NULL);
-			SDL_RenderPresent(m_Renderer);
-        }
-    }
+	const int xincrement = 5;
+	static int xpos = 0;
+	static int ypos = 0;
+
+	for (auto& list_it : m_RenderObjects)
+	{
+		if (list_it->m_bVisible)
+		{
+			list_it->update();
+
+			SDL_Rect Pos = list_it->m_RenderRect;
+
+			if (list_it->m_RenderResource->m_FileName == "spaceship.bmp")
+				Pos.x += xpos;
+
+			SDL_RenderCopy(this->m_Renderer, list_it->m_RenderResource->m_Texture, &(list_it->m_RenderRect), &Pos);
+
+			if (list_it->m_RenderResource->m_FileName == "spaceship.bmp")
+			{
+				xpos += xincrement;
+				if (xpos + Pos.w > 640 + Pos.w)
+					xpos = -200;
+			}
+		}
+	}
+
+	SDL_RenderPresent(this->m_Renderer);
+
+	cSceneObject* curScene = nullptr;
+
+	for (auto& list_it : m_RenderObjects)
+	{
+
+		curScene = list_it->GetCurrentScene();
+
+		if (list_it->m_bVisible)
+		{
+			list_it->update();
+
+			SDL_Rect Pos = list_it->m_RenderRect;
+
+			if (curScene)
+				Pos.x = curScene->m_PosX;
+
+			SDL_RenderCopy(this->m_Renderer, list_it->m_RenderResource->m_Texture, &(list_it->m_RenderRect), &Pos);
+		}
+	}
+
+	SDL_Delay(25);
 }
 
 //-------------------------------------------------------
@@ -346,7 +395,78 @@ cResource* cSDL2DRenderManager::loadResourceFromXML(XMLElement *Element)
 
 void cSDL2DRenderManager::renderScene()
 {
-//Implemented later with Scene Manager
+
+	//Implemented later with Scene Manager
+	c2DLayer *Layer = this->m_SceneManager->findLayer("layer2");
+
+	if (Layer)
+	{
+		for (auto *so : Layer->m_SceneObjects)
+			NavigateLayer(so);
+	}
+
+}
+
+void cSDL2DRenderManager::NavigateLayer(cSceneObject* so)
+{
+	if (bGoHome)
+	{
+		bGoHome = false;
+		MoveAcross = true;
+		so->m_PosX = 0;
+	}
+	else if (bGoOrigin)
+	{
+		bGoOrigin = false;
+		MoveAcross = true;
+		so->m_PosX = so->m_PosY = 0;
+	}
+	else if (bGoEnd)
+	{
+		bGoEnd = false;
+		MoveBack = true;
+		so->m_PosX = current_width - so->m_RenderRect.w;
+	}
+
+	if (MoveAcross)
+	{
+		so->m_PosX += positionMove;
+		if (so->m_PosX + so->m_RenderRect.w > current_width)
+		{
+			MoveAcross = false;
+			MoveDown = true;
+		}
+	}
+	
+	else if (MoveDown)
+	{
+		so->m_PosY += positionMove;
+		if (so->m_PosY + so->m_RenderRect.h > current_height)
+		{
+			MoveDown = false;
+			MoveBack = true;
+		}
+	}
+	
+	else if (MoveBack)
+	{
+		so->m_PosX += positionMove;
+		if (so->m_PosX < 0)
+		{
+			MoveBack = false;
+			MoveUp = true;
+		}
+	}
+	
+	else if (MoveUp)
+	{
+		so->m_PosY -= positionMove;
+		if (so->m_PosY < 0)
+		{
+			MoveUp = false;
+			MoveAcross = true;
+		}
+	}
 }
 
 //-------------------------------------------------------

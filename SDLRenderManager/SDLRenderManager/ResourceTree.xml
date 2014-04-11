@@ -1,5 +1,4 @@
 <resources>
-	<resource UID="1" type="graphic" filename="smoke.png" scenescope="0"></resource>
-	<resource UID="2" type="graphic" filename="face_colorkey.png" scenescope="0"></resource>
-	<resource UID="3" type="graphic" filename="Tiles.png" scenescope="0"></resource>
+	<resource UID="1" type="graphic" filename="background.bmp" scenescope="0"></resource>
+	<resource UID="2" type="graphic" filename="spaceship.bmp" scenescope="0"></resource>
 </resources>

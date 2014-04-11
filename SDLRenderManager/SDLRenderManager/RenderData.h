@@ -3,6 +3,8 @@
 
 #include <SDL.h>
 
+class cSceneObject;
+
 //------------------------------------------------------------
 
 //Render Resource Definition
@@ -16,6 +18,8 @@ class cRenderResource : public cResource
     public:
         SDL_Surface *m_Surface;
 		SDL_Texture* m_Texture;
+		SDL_Renderer *m_Renderer;
+		cSceneObject *parentScene;
 
         ~cRenderResource();
         void load();
@@ -39,6 +43,7 @@ class cSDLRenderObject : public cEngineObject
     public:
 
     cRenderResource *m_RenderResource;
+	cSceneObject* GetCurrentScene() { return m_RenderResource->parentScene; }
     SDL_Rect m_RenderRect;
     float m_PosX;
     float m_PosY;

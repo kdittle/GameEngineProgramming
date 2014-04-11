@@ -190,9 +190,8 @@ xcopy /Y "$(SolutionDir)\tinyxml2-master\tinyxml2-master\tinyxml2\bin\x64-Debug-
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="face_colorkey.png" />
-    <Image Include="Smoke.png" />
-    <Image Include="Tiles.png" />
+    <Image Include="background.bmp" />
+    <Image Include="spaceship.bmp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

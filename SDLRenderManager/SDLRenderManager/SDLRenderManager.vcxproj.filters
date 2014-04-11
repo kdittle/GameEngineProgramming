@@ -79,13 +79,10 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="face_colorkey.png">
+    <Image Include="background.bmp">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="Smoke.png">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="Tiles.png">
+    <Image Include="spaceship.bmp">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>

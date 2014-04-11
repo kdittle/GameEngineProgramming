@@ -61,12 +61,32 @@ class cSpriteObject : public cSDLRenderObject
 
 class cSDL2DRenderManager : public c2DRenderManager
 {
-    private:
+	//Create and input manager in this fucker.
+
+	private:
+
+	bool MoveAcross;
+	bool MoveDown;
+	bool MoveBack;
+	bool MoveUp;
+
+	bool bGoHome = false;
+	bool bGoEnd = false;
+	bool bGoOrigin = false;
+	int resetXPos = 0;
+	int resetYPos = 0;
+
+	int current_width, current_height;
+	int positionMove = 5;
+
+	void NavigateLayer(cSceneObject* so);
+
     protected:
     cSDL2DRenderManager();
     static cSDL2DRenderManager m_SDL2DRenderManager;
     void renderScene();
 	SDL_SysWMinfo m_inf;
+	bool checkKeys(SDL_Keysym keysym);
 
     public:
     static cSDL2DRenderManager* GetSDL2DRenderManager();

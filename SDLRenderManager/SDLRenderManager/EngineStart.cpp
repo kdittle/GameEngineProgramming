@@ -69,31 +69,31 @@ int _tmain(int argc, _TCHAR* argv[])
     ResourceManager->loadFromXMLFile("ResourceTree.xml");
     ResourceManager->setCurrentScope(0);
 
-    g_SceneManager->loadFromXMLFile("SceneTree.xml");
-
-    g_RenderManager->m_SceneManager = g_SceneManager;
-
 	//cMySoundEffect MySound;
 	//MySound.m_AudioResource = (cAudioResource*)ResourceManager->findResourcebyID(5);
 
 	//g_AudioManager->addAudioPlayer(&MySound);
 
-    cTestListener Tst;
-
-    g_SceneManager->addListener(&Tst);
-    g_SceneManager->addTimer(0,1000);
-
-	/*for (size_t i = 0; i < ResourceManager->getResourceCount(); i++)
+	for (size_t i = 0; i < ResourceManager->getResourceCount(); i++)
 	{
 		cSDLRenderObject* RenderObject = new cSDLRenderObject();
 		RenderObject->setResourceObject((cRenderResource*)ResourceManager->findResourcebyID(i + 1));
 		g_RenderManager->m_RenderObjects.push_back(RenderObject);
-	}*/
+	}
+
+	g_SceneManager->loadFromXMLFile("SceneTree.xml");
+
+	g_RenderManager->m_SceneManager = g_SceneManager;
+
+	cTestListener Tst;
+
+	g_SceneManager->addListener(&Tst);
+	g_SceneManager->addTimer(0, 1000);
 
     while (g_RenderManager->update())
     {
 		g_SceneManager->update();
-		m_Input.update();
+		//m_Input.update();
 		//g_AudioManager->update();
     }
 

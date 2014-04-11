@@ -80,11 +80,17 @@ void cSDL2DSceneManager::addLayerObjects(c2DLayer *Layer, XMLElement *Element)
     {
         std::string AttribName = ElementAttrib->Name();
         std::string AttribValue = ElementAttrib->Value();
+
         if(AttribName=="resourceID")
         {
             cResourceManager* ResourceManager = cResourceManager::GetResourceManager();
 
-            Object->setResourceObject((cRenderResource*) ResourceManager->findResourcebyID(atoi(AttribValue.c_str())));
+			cRenderResource* cur = (cRenderResource*)ResourceManager->findResourcebyID(atoi(AttribValue.c_str()));
+
+			cur->parentScene = Object;
+			Object->setResourceObject(cur);
+
+            //Object->setResourceObject((cRenderResource*) ResourceManager->findResourcebyID(atoi(AttribValue.c_str())));
         }
 
         if(AttribName=="posx")

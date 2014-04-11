@@ -142,7 +142,7 @@ class cTestListener : public cSceneListener
         {
             c2DLayer* Layer = Manager->findLayer("layer2");
             //Layer->m_bVisible = !Layer->m_bVisible;
-			Layer->m_bVisible != Layer->m_bVisible;
+			//Layer->m_bVisible != Layer->m_bVisible;
         }
 };
 
