@@ -21,7 +21,7 @@ c2DLayer::c2DLayer() : cEngineObject()
 
 c2DLayer* cSDL2DSceneManager::addLayer(std::string Name)
 {
-    c2DLayer *Layer = findLayer(Name);
+    c2DLayer* Layer = findLayer(Name);
 
     if(!Layer)
     {
@@ -38,14 +38,11 @@ c2DLayer* cSDL2DSceneManager::addLayer(std::string Name)
 
 c2DLayer* cSDL2DSceneManager::findLayer(std::string Name)
 {
-    std::list<c2DLayer*>::iterator list_it;
-
-    //Render all assoicated render objects
-    for(list_it=m_Layers.begin();list_it!=m_Layers.end();list_it++)
-    {
-        if((*list_it)->m_Name==Name)
-            return (*list_it);
-    }
+	for (auto* list_it : m_Layers)
+	{
+		if (list_it->m_Name == Name)
+			return list_it;
+	}
 
     return NULL;
 }
@@ -54,14 +51,11 @@ c2DLayer* cSDL2DSceneManager::findLayer(std::string Name)
 
 void cSDL2DSceneManager::removeLayer(std::string Name)
 {
-    std::list<c2DLayer*>::iterator list_it;
-
-    //Render all assoicated render objects
-    for(list_it=m_Layers.begin();list_it!=m_Layers.end();list_it++)
-    {
-        if((*list_it)->m_Name==Name)
-           m_Layers.remove(*list_it);
-    }
+	for (auto *list_it : m_Layers)
+	{
+		if (list_it->m_Name == Name)
+			m_Layers.remove(list_it);
+	}
 }
 
 //------------------------------------------------------------
@@ -85,12 +79,7 @@ void cSDL2DSceneManager::addLayerObjects(c2DLayer *Layer, XMLElement *Element)
         {
             cResourceManager* ResourceManager = cResourceManager::GetResourceManager();
 
-			cRenderResource* cur = (cRenderResource*)ResourceManager->findResourcebyID(atoi(AttribValue.c_str()));
-
-			cur->parentScene = Object;
-			Object->setResourceObject(cur);
-
-            //Object->setResourceObject((cRenderResource*) ResourceManager->findResourcebyID(atoi(AttribValue.c_str())));
+            Object->setResourceObject((cRenderResource*) ResourceManager->findResourcebyID(atoi(AttribValue.c_str())));
         }
 
         if(AttribName=="posx")
@@ -142,10 +131,10 @@ bool cSDL2DSceneManager::loadFromXMLFile(std::string Filename)
 
    std::list<c2DLayer*> List;
 
-    if(doc.LoadFile(Filename.c_str()))
+    if(doc.LoadFile(Filename.c_str()) == XML_NO_ERROR)
     {
         //Find resources node
-        XMLNode* ResourceTree = doc.FirstChild();
+        XMLNode* ResourceTree = doc.RootElement();
 
         if(ResourceTree)
         {
@@ -223,27 +212,21 @@ bool cSDL2DSceneManager::loadFromXMLFile(std::string Filename)
 
 void cSDL2DSceneManager::checkTimerExpired()
 {
-    std::list<cTimer*>::iterator list_it;
-
-    //Render all assoicated render objects
-    for(list_it=m_Timers.begin();list_it!=m_Timers.end();list_it++)
-    {
-        (*list_it)->update();
-
-        if((*list_it)->m_Expired)
-        {
-            std::list<cSceneListener*>::iterator listener_it;
-
-            for(listener_it=m_Listeners.begin();listener_it!=m_Listeners.end();listener_it++)
-            {
-                if((*listener_it)->m_ListenFor == SE_TIMER_EXPIRED)
-                {
-                    (*listener_it)->Event(this, NULL);
-                    (*list_it)->start();
-                }
-            }
-        }
-    }
+	for (auto* list_it : m_Timers)
+	{
+		list_it->update();
+		if (list_it->m_Expired)
+		{
+			for (auto* listener_it : m_Listeners)
+			{
+				if (listener_it->m_ListenFor == SE_TIMER_EXPIRED)
+				{
+					listener_it->Event(this, NULL);
+					list_it->start();
+				}
+			}
+		}
+	}
 }
 
 //------------------------------------------------------------

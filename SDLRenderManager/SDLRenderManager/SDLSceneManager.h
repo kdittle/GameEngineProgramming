@@ -107,7 +107,7 @@ class cSDL2DSceneManager : public cEngineObject
         void addLayerObjects(c2DLayer *Layer, XMLElement *Element);
         void checkTimerExpired();
     public:
-
+		
         std::list<c2DLayer*> m_Layers;
         std::list<cTimer*> m_Timers;
         std::list<cSceneListener*> m_Listeners;
@@ -140,9 +140,11 @@ class cTestListener : public cSceneListener
 
         void Event(cSDL2DSceneManager* Manager, void* customData) const
         {
+			bool bSwitchVisibility = false;
             c2DLayer* Layer = Manager->findLayer("layer2");
-            //Layer->m_bVisible = !Layer->m_bVisible;
-			//Layer->m_bVisible != Layer->m_bVisible;
+            
+			if (bSwitchVisibility)
+				Layer->m_bVisible = !Layer->m_bVisible;
         }
 };
 

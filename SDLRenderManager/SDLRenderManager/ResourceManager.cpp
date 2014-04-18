@@ -16,54 +16,46 @@ cResourceManager* cResourceManager::GetResourceManager()
 
 cResource* cResourceManager::findResourcebyID(unsigned int UID)
 {
-    std::map<unsigned int, std::list<cResource*> >::iterator it;
+	//Search through scopes
+	for (auto &it : m_Resources)
+	{
+		if (!it.second.empty())
+		{
+			//Search through resources of scope
+			for (auto &list_it : it.second)
+			{
+				//If matches ID
+				if (list_it->m_ResourceID == UID)
+					return list_it;
+			}
+		}
+	}
 
-    //Search through scopes
-    for(it=m_Resources.begin();it!=m_Resources.end();it++)
-    {
-        if(!(*it).second.empty())
-        {
-            std::list<cResource*>::iterator list_it;
-
-            //Search through resources of scope
-            for(list_it=(*it).second.begin();list_it!=(*it).second.end();list_it++)
-            {
-                //If matches ID
-                if((*list_it)->m_ResourceID == UID)
-                    return (*list_it);
-            }
-        }
-    }
-
-    return NULL;
+	return NULL;
 }
 
 //-------------------------------------------------------
 
 void cResourceManager::clear()
 {
-    std::map<unsigned int, std::list<cResource*> >::iterator it;
+	//Search through scopes
+	for (auto it : m_Resources)
+	{
+		if (!it.second.empty())
+		{
+			//Search through resources of scope
+			for (auto* list_it : it.second)
+			{
+				//Delete resource object
+				list_it->unload();
+				SAFE_DELETE(list_it);
+			}
 
-    //Search through scopes
-    for(it=m_Resources.begin();it!=m_Resources.end();it++)
-    {
-        if(!(*it).second.empty())
-        {
-            std::list<cResource*>::iterator list_it;
+			it.second.clear();
+		}
+	}
 
-            //Search through resources of scope
-            for(list_it=(*it).second.begin();list_it!=(*it).second.end();list_it++)
-            {
-                //Delete resource object
-                (*list_it)->unload();
-                SAFE_DELETE(*list_it);
-            }
-
-            (*it).second.clear();
-        }
-    }
-
-    m_Resources.clear();
+	m_Resources.clear();
 }
 
 //-------------------------------------------------------
@@ -143,22 +135,18 @@ bool cResourceManager::loadFromXMLFile(std::string Filename)
 
 void cResourceManager::setCurrentScope(unsigned int Scope)
 {
-    //Unload old scope, if not global scope.
-    if(m_CurrentScope!=0)
-    {
-        std::list<cResource*>::iterator list_it;
+	//Unload old scope, if not global scope.
+	if (m_CurrentScope != 0)
+	{
+		for (auto* list_it : m_Resources[m_CurrentScope])
+			list_it->unload();
+	}
 
-        for(list_it=m_Resources[m_CurrentScope].begin();list_it!=m_Resources[m_CurrentScope].end();list_it++)
-            (*list_it)->unload();
-    }
+	m_CurrentScope = Scope;
 
-    m_CurrentScope = Scope;
 
-    //Load new scope.
-    std::list<cResource*>::iterator list_it;
-
-    for(list_it=m_Resources[m_CurrentScope].begin();list_it!=m_Resources[m_CurrentScope].end();list_it++)
-        (*list_it)->load();
+	for (auto* list_it : m_Resources[m_CurrentScope])
+		list_it->load();
 }
 
 //-------------------------------------------------------

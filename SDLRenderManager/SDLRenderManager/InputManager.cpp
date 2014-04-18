@@ -1,5 +1,8 @@
 #include "stdafx.h"
 #include "InputManager.h"
+#include "SDL2DRenderManager.h"
+#include <windows.h>
+#include "SDL_syswm.h"
 
 //-------------------------------------------------------
 
@@ -15,42 +18,53 @@ cInputManager::cInputManager()
 void cInputManager::init()
 {
 	try{
-	cSDL2DRenderManager* g_RenderManager = cSDL2DRenderManager::GetSDL2DRenderManager();
+		cSDL2DRenderManager* g_RenderManager = cSDL2DRenderManager::GetSDL2DRenderManager();
 
-	OIS::ParamList pl;
-	std::ostringstream windowHndStr;
-	size_t handle = (size_t)g_RenderManager->m_WindowHandle;
-	windowHndStr << handle;
-	pl.insert(std::make_pair(std::string("WINDOW"), windowHndStr.str()));
-	m_OISInputManager = OIS::InputManager::createInputSystem( pl );
+		OIS::ParamList pl;
+		std::ostringstream windowHndStr;
 
-	m_Keyboard = static_cast<OIS::Keyboard*>(m_OISInputManager->createInputObject(OIS::OISKeyboard, true));
-	m_Keyboard->setEventCallback(this);
+		SDL_SysWMinfo wmi;
+		SDL_Window* window = g_RenderManager->m_Window;
+		SDL_VERSION(&wmi.version);
 
-	//If there is a keyboard
-	/*if(m_OISInputManager->numKeyBoards() > 0)
-	{
-		m_Keyboard = static_cast<OIS::Keyboard*>(m_OISInputManager->createInputObject(OIS::OISKeyboard, true));
-		m_Keyboard->setEventCallback(this);
-	}*/
+		if (!SDL_GetWindowWMInfo(window, &wmi))
+			return;
 
-	////If there is a mouse
-	//if(m_OISInputManager->numMice() > 0)
-	//{
-	//	m_Mouse = static_cast<OIS::Mouse*>(m_OISInputManager->createInputObject(OIS::OISMouse, true));
-	//	m_Mouse->setEventCallback(this);
-	//}
+		size_t handle = (size_t)wmi.info.win.window;
+		//g_RenderManager->m_WindowHandle;
+		windowHndStr << handle;
+		pl.insert(std::make_pair(std::string("WINDOW"), windowHndStr.str()));
+		m_OISInputManager = OIS::InputManager::createInputSystem(pl);
 
-	}catch(...){;}
+		//If there is a keyboard
+		if (m_OISInputManager->getNumberOfDevices(OIS::OISKeyboard) > 0)
+		{
+			m_Keyboard = static_cast<OIS::Keyboard*>(m_OISInputManager->createInputObject(OIS::OISKeyboard, true));
+			m_Keyboard->setEventCallback(this);
+		}
+
+		//If there is a mouse
+		if (m_OISInputManager->getNumberOfDevices(OIS::OISMouse) > 0)
+		{
+			m_Mouse = static_cast<OIS::Mouse*>(m_OISInputManager->createInputObject(OIS::OISMouse, true));
+			m_Mouse->setEventCallback(this);
+		}
+
+	}
+	catch (...){ ; }
 }
 
 //-------------------------------------------------------
 
 void cInputManager::free()
 {
-	if(m_OISInputManager)
+	if (m_OISInputManager)
 	{
-		m_OISInputManager->destroyInputSystem(m_OISInputManager);
+		if (m_Keyboard != nullptr)
+			m_OISInputManager->destroyInputObject(m_Keyboard);
+		if (m_Mouse != nullptr)
+			m_OISInputManager->destroyInputObject(m_Mouse);
+
 	}
 }
 
@@ -76,10 +90,11 @@ void cInputManager::addListener(cInputListener* Listener)
 
 bool cInputManager::keyPressed( const OIS::KeyEvent &e )
 {
-	std::list<cInputListener*>::iterator list_it;
+	for (auto* list_it : m_InputListeners)
+	{
+		list_it->keyPressed(e);
+	}
 
-	for(list_it=m_InputListeners.begin();list_it!=m_InputListeners.end();list_it++)
-		(*list_it)->keyPressed(e);
 
 	return true;
 }

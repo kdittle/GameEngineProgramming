@@ -3,7 +3,7 @@
 
 #include <OIS.h>
 #include <list>
-#include "SDL2DRenderManager.h"
+
 #include "EngineObject.h"
 #include <map>
 
@@ -14,6 +14,23 @@ class cInputListener : public cEngineObject
 private:
 protected:
 public:
+
+	void Reset()
+	{
+		SignalBreak = false;
+		GoHOME = false;
+		GoEND = false;
+		GoUpperBound = false;
+		GoLowerBound = false;
+	}
+
+	bool CTRL_Pressed = false;
+	bool SignalBreak = false;
+	bool GoHOME = false;
+	bool GoEND = false;
+	bool GoUpperBound = false;
+	bool GoLowerBound = false;
+
 	//Input events
 	virtual bool keyPressed( const OIS::KeyEvent &e ){return true;};
 	virtual bool keyReleased( const OIS::KeyEvent &e ){return true;};

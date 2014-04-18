@@ -37,13 +37,52 @@
 class MyInputListener : public cInputListener
 {
 private:
+
 protected:
 public:
 
 	bool keyPressed(const OIS::KeyEvent &e)
 	{
-		if (e.key == OIS::KC_ESCAPE)
-			MessageBoxA(NULL, "Escape Key Pressed", "", MB_OK);
+
+
+
+		switch (e.key)
+		{
+		case OIS::KC_ESCAPE:
+			SignalBreak = true;
+
+			break;
+		case OIS::KC_HOME:
+			GoHOME = true;
+
+			if (CTRL_Pressed)
+			{
+				GoUpperBound = true;
+				GoHOME = false;
+				CTRL_Pressed = false;
+			}
+			break;
+		case OIS::KC_END:
+			GoEND = true;
+			if (CTRL_Pressed)
+			{
+				GoLowerBound = true;
+				GoEND = false;
+				CTRL_Pressed = false;
+			}
+			break;
+		case OIS::KC_UP:
+			GoUpperBound = true;
+			break;
+		case OIS::KC_DOWN:
+			GoLowerBound = true;
+			break;
+		case OIS::KC_LCONTROL:
+		case OIS::KC_RCONTROL:
+			CTRL_Pressed = true;
+			break;
+		}
+
 
 		return true;
 	}
@@ -52,11 +91,9 @@ public:
 int _tmain(int argc, _TCHAR* argv[])
 {
 	cSDL2DRenderManager* g_RenderManager = cSDL2DRenderManager::GetSDL2DRenderManager();
-    cSDL2DSceneManager* g_SceneManager = new cSDL2DSceneManager();
-	//cAudioManager* g_AudioManager = cAudioManager::GetAudioManager();
+	cSDL2DSceneManager *g_SceneManager = new cSDL2DSceneManager();
 
-    g_RenderManager->init(800,600,false,"My Window");
-	//g_AudioManager->init();
+	g_RenderManager->init(800, 600, false, "My Window");
 
 	cInputManager m_Input;
 	m_Input.init();
@@ -65,17 +102,13 @@ int _tmain(int argc, _TCHAR* argv[])
 
 	m_Input.addListener(&List);
 
-    cResourceManager* ResourceManager = cResourceManager::GetResourceManager();
-    ResourceManager->loadFromXMLFile("ResourceTree.xml");
-    ResourceManager->setCurrentScope(0);
-
-	//cMySoundEffect MySound;
-	//MySound.m_AudioResource = (cAudioResource*)ResourceManager->findResourcebyID(5);
-
-	//g_AudioManager->addAudioPlayer(&MySound);
+	cResourceManager* ResourceManager = cResourceManager::GetResourceManager();
+	ResourceManager->loadFromXMLFile("ResourceTree.xml");
+	ResourceManager->setCurrentScope(0);
 
 	for (size_t i = 0; i < ResourceManager->getResourceCount(); i++)
 	{
+
 		cSDLRenderObject* RenderObject = new cSDLRenderObject();
 		RenderObject->setResourceObject((cRenderResource*)ResourceManager->findResourcebyID(i + 1));
 		g_RenderManager->m_RenderObjects.push_back(RenderObject);
@@ -85,28 +118,40 @@ int _tmain(int argc, _TCHAR* argv[])
 
 	g_RenderManager->m_SceneManager = g_SceneManager;
 
+
 	cTestListener Tst;
 
 	g_SceneManager->addListener(&Tst);
-	g_SceneManager->addTimer(0, 1000);
+	g_SceneManager->addTimer(0, 2000);
 
-    while (g_RenderManager->update())
-    {
+	SDL_RenderClear(g_RenderManager->m_Renderer);
+	g_RenderManager->InputListener = &List;
+
+	while (g_RenderManager->update())
+	{
 		g_SceneManager->update();
-		//m_Input.update();
-		//g_AudioManager->update();
-    }
+		m_Input.update();
+		if (List.SignalBreak)
+		{
+			SDL_Event event;
+			SDL_zero(event);
+			event.type = SDL_EventType::SDL_QUIT;
+			SDL_PushEvent(&event);
+		}
 
-	g_RenderManager->m_RenderObjects.clear();
+
+	}
+
 
 	m_Input.free();
+	g_RenderManager->m_RenderObjects.clear();
 
-    g_RenderManager->free();
 
-    delete g_SceneManager;
 
-	//g_AudioManager->free();
+	g_RenderManager->free();
 
-    return 0;
+	delete g_SceneManager;
+
+	return 0;
 }
 

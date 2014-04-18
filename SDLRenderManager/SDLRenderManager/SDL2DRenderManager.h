@@ -15,6 +15,7 @@
 #include <math.h>
 #include "RenderData.h"
 #include "SDL_syswm.h"
+#include "InputManager.h"
 
 //Tiny XML Header. Needs TinyXML library
 //Available for free at: http://www.grinninglizard.com/tinyxml/
@@ -30,25 +31,25 @@
 
 class cSpriteObject : public cSDLRenderObject
 {
-    private:
-    protected:
-    DWORD m_TimeLastFrame;
+private:
+protected:
+	DWORD m_TimeLastFrame;
 
-    public:
-    unsigned int m_TotalFrames;
-    unsigned int m_FramsPerRow;
-    unsigned int m_FramsPerColumn;
-    unsigned int m_CurrentFrame;
-    unsigned int m_StartFrame;
-    float m_Speed;
-    unsigned int m_FrameWidth;
-    unsigned int m_FrameHeight;
+public:
+	unsigned int m_TotalFrames;
+	unsigned int m_FramsPerRow;
+	unsigned int m_FramsPerColumn;
+	unsigned int m_CurrentFrame;
+	unsigned int m_StartFrame;
+	float m_Speed;
+	unsigned int m_FrameWidth;
+	unsigned int m_FrameHeight;
 
-    void update();
-    void play();
-    void stop();
-    void setFrameRect(unsigned int FrameNumber);
-    cSpriteObject();
+	void update();
+	void play();
+	void stop();
+	void setFrameRect(unsigned int FrameNumber);
+	cSpriteObject();
 };
 
 //------------------------------------------------------------
@@ -61,18 +62,18 @@ class cSpriteObject : public cSDLRenderObject
 
 class cSDL2DRenderManager : public c2DRenderManager
 {
-	//Create and input manager in this fucker.
 
-	private:
+private:
 
-	bool MoveAcross;
-	bool MoveDown;
-	bool MoveBack;
-	bool MoveUp;
+	bool MoveAcross = true;
+	bool MoveDown = false;
+	bool MoveBack = false;
+	bool MoveUp = false;
 
 	bool bGoHome = false;
 	bool bGoEnd = false;
 	bool bGoOrigin = false;
+	bool bGoAxis = false;
 	int resetXPos = 0;
 	int resetYPos = 0;
 
@@ -80,30 +81,33 @@ class cSDL2DRenderManager : public c2DRenderManager
 	int positionMove = 5;
 
 	void NavigateLayer(cSceneObject* so);
-
-    protected:
-    cSDL2DRenderManager();
-    static cSDL2DRenderManager m_SDL2DRenderManager;
-    void renderScene();
-	SDL_SysWMinfo m_inf;
+	void NavigateLayer(c2DLayer* Layer);
 	bool checkKeys(SDL_Keysym keysym);
 
-    public:
-    static cSDL2DRenderManager* GetSDL2DRenderManager();
+protected:
+
+public:
+	cSDL2DRenderManager();
+	static cSDL2DRenderManager m_SDL2DRenderManager;
+	void renderScene();
+	SDL_SysWMinfo m_inf;
+
+	static cSDL2DRenderManager* GetSDL2DRenderManager();
 	SDL_Window* m_Window;
 	SDL_Renderer* m_Renderer;
 	SDL_Texture* m_Texture;
-    std::stringstream m_VideoInfo;
-    bool init(unsigned int Width=800, unsigned int Height=600, bool fullScreen=false, char* WindowTitle=0);
-    void free();
-    bool update();
-    void toggleFullScreen();
-    cResource* loadResourceFromXML(XMLElement *Element);
-    void renderAllObjects();
+	std::stringstream m_VideoInfo;
+	bool init(unsigned int Width = 800, unsigned int Height = 600, bool fullScreen = false, char* WindowTitle = 0);
+	void free();
+	bool update();
+	void toggleFullScreen();
+	cResource* loadResourceFromXML(XMLElement *Element);
+	void renderAllObjects();
 	HWND m_WindowHandle;
 
-    std::list<cSDLRenderObject*> m_RenderObjects;
+	std::list<cSDLRenderObject*> m_RenderObjects;
 	cSDL2DSceneManager* m_SceneManager;
+	cInputListener* InputListener;
 };
 
 //------------------------------------------------------------

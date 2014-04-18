@@ -19,6 +19,7 @@ cRenderResource::cRenderResource() : cResource()
 cRenderResource::~cRenderResource()
 {
     unload();
+
 }
 
 //-------------------------------------------------------
@@ -27,7 +28,11 @@ void cRenderResource::load()
 {
     unload();
 
+	SDL_Renderer *curRend = cSDL2DRenderManager::GetSDL2DRenderManager()->m_Renderer;
+
 	m_Texture = IMG_LoadTexture(cSDL2DRenderManager::GetSDL2DRenderManager()->m_Renderer, m_FileName.c_str());
+
+	m_bLoaded = true;
     
 }
 
@@ -35,13 +40,13 @@ void cRenderResource::load()
 
 void cRenderResource::unload()
 {
-    if(m_Surface)
-    {
-        SDL_FreeSurface(m_Surface);
-        m_Surface = NULL;
-    }
+	if (m_Texture)
+	{
+		SDL_DestroyTexture(m_Texture);
+		m_Texture = NULL;
+	}
 
-    m_bLoaded = false;
+	m_bLoaded = false;
 }
 
 //-------------------------------------------------------
@@ -64,11 +69,18 @@ cSDLRenderObject::cSDLRenderObject()
 
 void cSDLRenderObject::setColorKey(unsigned int r, unsigned int g, unsigned int b)
 {
-    m_ColorKey.r = r;
-    m_ColorKey.g = g;
-    m_ColorKey.b = b;
-    Uint32 colorkey = SDL_MapRGB(m_RenderResource->m_Surface->format, m_ColorKey.r, m_ColorKey.g, m_ColorKey.b);
-	SDL_SetColorKey(m_RenderResource->m_Surface, SDL_TRUE, colorkey);
+	m_ColorKey.r = r;
+	m_ColorKey.g = g;
+	m_ColorKey.b = b;
+
+
+	SDL_Window* window =
+		cSDL2DRenderManager::GetSDL2DRenderManager()->m_Window;
+	SDL_Surface* surface = SDL_GetWindowSurface(window);
+
+	Uint32 colorkey = SDL_MapRGB(surface->format, m_ColorKey.r, m_ColorKey.g, m_ColorKey.b);
+	int success = SDL_SetColorKey(surface, -1, colorkey);
+	std::cout << "success value: " << success << "\n";
 }
 
 //-------------------------------------------------------
@@ -105,14 +117,12 @@ cSpriteObject::cSpriteObject() : cSDLRenderObject()
 void cSpriteObject::play()
 {
     //calculate frame dimensions
-
-    SDL_Surface *TmpSurface = m_RenderResource->m_Surface;
-    m_FrameWidth = TmpSurface->w/m_FramsPerRow;
-    m_FrameHeight = TmpSurface->h/m_FramsPerColumn;
-    m_CurrentFrame = m_StartFrame;
-    setFrameRect(m_CurrentFrame);
-	m_TimeLastFrame = SDL_GetTicks();
-	//m_TimeLastFrame = timeGetTime();
+	int w, h;
+	SDL_QueryTexture(m_RenderResource->m_Texture, NULL, NULL, &w, &h);
+	m_FrameHeight = h / m_FramsPerColumn;
+	m_FrameWidth = w / m_FramsPerRow;
+	m_CurrentFrame = m_StartFrame;
+	setFrameRect(m_CurrentFrame);
 }
 
 //-------------------------------------------------------
@@ -166,10 +176,10 @@ void cSpriteObject::setFrameRect(unsigned int FrameNumber)
 
 cSDL2DRenderManager::cSDL2DRenderManager() : c2DRenderManager()
 {
-    //m_RenderWindow = NULL;
 	m_Window = NULL;
-	m_Renderer = NULL;
+	m_SceneManager = NULL;
 	m_WindowHandle = 0;
+	InputListener = NULL;
 }
 
 //-------------------------------------------------------
@@ -186,37 +196,18 @@ bool cSDL2DRenderManager::init(unsigned int Width, unsigned int Height, bool ful
 
 	m_Renderer = SDL_CreateRenderer(m_Window, -1, SDL_RENDERER_ACCELERATED);
 
-    //if(fullScreen)
-    //    m_RenderWindow = SDL_SetVideoMode(Width, Height, 16, SDL_HWSURFACE|SDL_DOUBLEBUF|SDL_FULLSCREEN);
-    //else
-    //    m_RenderWindow = SDL_SetVideoMode(Width, Height, 16, SDL_HWSURFACE|SDL_DOUBLEBUF);
+	SDL_RendererInfo Video, *VidInfo;
+	SDL_GetRenderDriverInfo(0, &Video);
 
-    //if(!m_RenderWindow)
-    //{
-    //    //Error: could not create window
-    //    return false;
-    //}
+	VidInfo = &Video;
 
-    //SDL_WM_SetCaption(WindowTitle,NULL);
+	bool hw_available = false;
+	if ((VidInfo->flags & SDL_RENDERER_ACCELERATED) == SDL_RENDERER_ACCELERATED)
+		hw_available = true;
 
-    //Populate video info
+	m_VideoInfo << "Video Info\nCan Create Hardware Surfaces: " << hw_available << "\n";
 
-    //const SDL_VideoInfo *VidInfo = SDL_GetVideoInfo();
-
-    //m_VideoInfo << "Video Info\nCan Create Hardware Surfaces: " << VidInfo->hw_available <<
-    //    "\nWindow Manager Available: " << VidInfo->wm_available << "\nHardware to hardware blits accelerated: " << VidInfo->blit_hw
-    //    << "\nHardware to hardware colorkey blits accelerated: " << VidInfo->blit_hw_CC
-    //    << "\nHardware to hardware alpha blits accelerated: " << VidInfo->blit_hw_A
-    //    << "\nSoftware to hardware blits accelerated: " << VidInfo->blit_sw
-    //    << "\nSoftware to hardware colorkey blits accelerated: " << VidInfo->blit_sw_CC
-    //    << "\nSoftware to hardware alpha blits accelerated: " << VidInfo->blit_sw_A
-    //    << "\nColor fills accelerated: " << VidInfo->blit_fill
-    //    << "\nTotal amount of video memory in Kilobytes: " << VidInfo->video_mem;
-
-	
-	/*SDL_GetWMInfo(&m_inf);*/
-
-	/*m_WindowHandle = m_inf.window;*/
+	std::cout << m_VideoInfo.str();
 
     return true;
 }
@@ -273,20 +264,20 @@ bool cSDL2DRenderManager::update()
 				break;
 
             // check for keypresses
-            case SDL_KEYDOWN:
-				return checkKeys(event.key.keysym);
+            /*case SDL_KEYDOWN:
+				return checkKeys(event.key.keysym);*/
         } // end switch
     } // end of message processing
 
     // clear screen
-	SDL_RenderClear(m_Renderer);
+	//SDL_RenderClear(m_Renderer);
 
     renderScene();
 
     //Call frame listeners
     renderAllObjects();
 
-	SDL_RenderPresent(m_Renderer);
+	//SDL_RenderPresent(m_Renderer);
 
     return true;
 }
@@ -297,55 +288,22 @@ void cSDL2DRenderManager::renderAllObjects()
 {
     std::list<cSDLRenderObject*>::iterator list_it;
 
-	const int xincrement = 5;
-	static int xpos = 0;
-	static int ypos = 0;
-
 	for (auto& list_it : m_RenderObjects)
 	{
 		if (list_it->m_bVisible)
 		{
 			list_it->update();
 
-			SDL_Rect Pos = list_it->m_RenderRect;
-
-			if (list_it->m_RenderResource->m_FileName == "spaceship.bmp")
-				Pos.x += xpos;
-
-			SDL_RenderCopy(this->m_Renderer, list_it->m_RenderResource->m_Texture, &(list_it->m_RenderRect), &Pos);
-
-			if (list_it->m_RenderResource->m_FileName == "spaceship.bmp")
-			{
-				xpos += xincrement;
-				if (xpos + Pos.w > 640 + Pos.w)
-					xpos = -200;
-			}
-		}
-	}
-
-	SDL_RenderPresent(this->m_Renderer);
-
-	cSceneObject* curScene = nullptr;
-
-	for (auto& list_it : m_RenderObjects)
-	{
-
-		curScene = list_it->GetCurrentScene();
-
-		if (list_it->m_bVisible)
-		{
-			list_it->update();
-
-			SDL_Rect Pos = list_it->m_RenderRect;
-
-			if (curScene)
-				Pos.x = curScene->m_PosX;
+			SDL_Rect Pos;
+			Pos.x = list_it->m_PosX;
+			Pos.y = list_it->m_PosY;
 
 			SDL_RenderCopy(this->m_Renderer, list_it->m_RenderResource->m_Texture, &(list_it->m_RenderRect), &Pos);
 		}
 	}
 
 	SDL_Delay(25);
+	SDL_RenderPresent(this->m_Renderer);
 }
 
 //-------------------------------------------------------
@@ -396,19 +354,118 @@ cResource* cSDL2DRenderManager::loadResourceFromXML(XMLElement *Element)
 void cSDL2DRenderManager::renderScene()
 {
 
-	//Implemented later with Scene Manager
-	c2DLayer *Layer = this->m_SceneManager->findLayer("layer2");
+	if (!m_SceneManager)
+		return;
 
-	if (Layer)
+	for (auto* Layer : m_SceneManager->m_Layers)
 	{
-		for (auto *so : Layer->m_SceneObjects)
-			NavigateLayer(so);
+		if (Layer->m_Name == "layer2")
+			NavigateLayer(Layer);
+
+		if (!Layer->m_bVisible)
+			continue;
+
+		for (auto* Object : Layer->m_SceneObjects)
+		{
+			if (Object->m_bVisible)
+			{
+				Object->update();
+				SDL_Rect Pos;
+
+				Pos.x = int(Layer->m_PosX) + int(Object->m_PosX);
+				Pos.y = int(Layer->m_PosY) + int(Object->m_PosY);
+				Pos.w = int(Object->m_RenderRect.w);
+				Pos.h = int(Object->m_RenderRect.h);
+
+
+				SDL_RenderCopy(this->m_Renderer,
+					Object->m_RenderResource->m_Texture,
+					&Object->m_RenderRect, &Pos);
+			}
+		}
 	}
 
 }
 
+void cSDL2DRenderManager::NavigateLayer(c2DLayer* Layer)
+{
+
+	SDL_Rect& m_RenderRect = Layer->m_SceneObjects.front()->m_RenderRect;
+	bGoHome = InputListener->GoHOME;
+	bGoEnd = InputListener->GoEND;
+	bGoOrigin = InputListener->GoUpperBound;
+	bGoAxis = InputListener->GoLowerBound;
+	InputListener->Reset();
+
+
+	if (bGoHome)
+	{
+		bGoHome = false;
+		MoveAcross = true;
+		Layer->m_PosX = 0;
+	}
+	else if (bGoOrigin)
+	{
+		bGoOrigin = false;
+		MoveAcross = true;
+		Layer->m_PosX = Layer->m_PosY = 0;
+	}
+	else if (bGoEnd)
+	{
+		bGoEnd = false;
+		MoveBack = true;
+		Layer->m_PosX = current_width - m_RenderRect.w;
+	}
+	else if (bGoAxis)
+	{
+		bGoEnd = false;
+		MoveBack = true;
+		Layer->m_PosX = current_width - m_RenderRect.w;
+		Layer->m_PosY =
+			current_height - m_RenderRect.h;
+	}
+
+	if (MoveAcross)
+	{
+		Layer->m_PosX += positionMove;
+		if (Layer->m_PosX + m_RenderRect.w > current_width)
+		{
+			MoveAcross = false;
+			MoveDown = true;
+		}
+	}
+	else if (MoveDown)
+	{
+		Layer->m_PosY += positionMove;
+		if (Layer->m_PosY + m_RenderRect.h > current_height)
+		{
+			MoveDown = false;
+			MoveBack = true;
+		}
+	}
+	else if (MoveBack)
+	{
+		Layer->m_PosX -= positionMove;
+		if (Layer->m_PosX < 0)
+		{
+			MoveBack = false;
+			MoveUp = true;
+		}
+	}
+	else if (MoveUp)
+	{
+		Layer->m_PosY -= positionMove;
+		if (Layer->m_PosY < 0)
+		{
+			MoveUp = false;
+			MoveAcross = true;
+		}
+	}
+}
+
 void cSDL2DRenderManager::NavigateLayer(cSceneObject* so)
 {
+
 	if (bGoHome)
 	{
 		bGoHome = false;
@@ -437,7 +494,6 @@ void cSDL2DRenderManager::NavigateLayer(cSceneObject* so)
 			MoveDown = true;
 		}
 	}
-	
 	else if (MoveDown)
 	{
 		so->m_PosY += positionMove;
@@ -447,17 +503,15 @@ void cSDL2DRenderManager::NavigateLayer(cSceneObject* so)
 			MoveBack = true;
 		}
 	}
-	
 	else if (MoveBack)
 	{
-		so->m_PosX += positionMove;
+		so->m_PosX -= positionMove;
 		if (so->m_PosX < 0)
 		{
 			MoveBack = false;
 			MoveUp = true;
 		}
 	}
-	
 	else if (MoveUp)
 	{
 		so->m_PosY -= positionMove;
